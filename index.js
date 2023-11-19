@@ -1,18 +1,19 @@
+const {Transaction, Wallet, User,Savings} = require('./models/Schemas');
 const express = require("express");
 const i18n = require("i18n");
+
 const router = express.Router();
 const {
     MainMenu,
     Register,
     unregisteredMenu,
-    Menus,
-    Cart,
-    OrderStatus,
-    AllOrders,
-    Admin
   } = require("./menu");
-  
-  const {Transaction, Wallet, User,Savings} = require('./models/Schemas');
+  const {Menus} = require('./pages/MainMenu');
+  const {AllOrders} = require('./pages/Orders');
+  const {Cart} = require('./pages/ViewCart');
+  const {Status} = require('./pages/OrderStatus');
+  const {Admin} = require('./Admin/index')
+
   const mongoose = require("mongoose");
   const dotenv = require("dotenv");
   const cors = require("cors");
@@ -94,7 +95,7 @@ router.post("/", (req, res) => {
             response = await Cart(textArray, phoneNumber);
               break;
           case "3": 
-          response = await OrderStatus(textArray, phoneNumber);
+          response = await Status(textArray, phoneNumber);
             break;
           case "4":
             response = await AllOrders(textArray,phoneNumber);
