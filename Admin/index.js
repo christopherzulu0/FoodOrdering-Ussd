@@ -20,17 +20,18 @@ async function getCategoriesFromDB() {
 
 
 let selectedCategories = "";
+let selectedOrder =""
 
 const Admins = {
-    Admin: async (textArray, phoneNumber) => {
+    Admin: async (textArray, phoneNumber, all_processing,all_pending) => {
         const level = textArray.length;
         let response = "";
       
         if (level === 1) {
             response = `CON Welcome to the admin area. Please select an option:
                         1. Manage Foods
-                        2. Pending Orders(5)
-                        3. Accepted Orders(5)
+                        2. Pending Orders<b>(${all_pending})</b>
+                        3. Orders being processed<b>(${all_processing})</b>
                         4. View Menu
                         `;
             return response;
@@ -46,11 +47,11 @@ const Admins = {
             return response;
         }
          //Flow for adding food category
-        if(level === 3 && textArray[2] === '1'){
+        if(level === 3  && textArray[1] === '1' && textArray[2] === '1'){
             response = `CON Enter category Name:`
             return response;
         }
-        if(level === 4 && textArray[2] === '1'){
+        if(level === 4 && textArray[1] === '1' && textArray[2] === '1'){
             response = `CON Verify Details
                          Category Name: ${textArray[3]}
 
@@ -93,15 +94,15 @@ const Admins = {
         }
 
         //flow for adding foods
-        if(level === 3 && textArray[2] === '2'){
+        if(level === 3 && textArray[1] === '1' && textArray[2] === '2'){
             response = `CON Enter food name:`
             return response;
         }
-        if(level === 4 && textArray[2] === '2'){
+        if(level === 4 && textArray[1] === '1' && textArray[2] === '2'){
             response = `CON Enter food price:`
             return response;
         }
-        if(level === 5 && textArray[2] === '2'){
+        if(level === 5 && textArray[1] === '1' &&  textArray[2] === '2'){
             const categories = await getCategoriesFromDB();
         
             if (categories.length > 0) {
@@ -152,6 +153,7 @@ const Admins = {
                         FoodName: textArray[3],
                         Price: textArray[4],
                         Order_id:orderid
+                       
                         // Add other course-related fields if applicable
                     });
         
@@ -271,7 +273,249 @@ const Admins = {
             }
         }
 
+        //Flow for retrieving Pending orders
+        if(level === 2 && textArray[1] === '2'){
+            try {
+                // Logic to retrieve pending applications from the database
+                const pendingOrders = await getPendingOrders();
+        
+                if (pendingOrders.length > 0) {
+                    // If there are pending applications, display them for review
+                    response = `CON <b>Pending Orders:</b>\n`;
+                    pendingOrders.forEach((orders, index) => {
+                        response += `${index + 1}. <b>${orders.FoodName}</b>(<b>K${orders.Price}</b>)
+                                                   `;
+                    });
+                    response += `0. Back\n`;
+                    selectedOrder = pendingOrders;
+                    return response;
+                } else {
+                    // If there are no pending applications, display a message
+                    response = `END No pending orders for review.\n`;
+                    return response
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                response = 'END An error occurred while retrieving pending applications. Please try again later.';
+            }
+        }
+
+        //Get the details of the selected pending order
+        if(level === 3 && textArray[1] === '2'){
+            const selectedIndex = parseInt(textArray[2]) - 1;
+            const selectedPendingOrder = selectedOrder[selectedIndex];
+
+            response = `CON <b>Approve or Decline Order</b>
+                         Name: <b>${selectedPendingOrder.FoodName}</b>
+                         Price: <b>${selectedPendingOrder.Price}</b>
+
+                         1. Accept
+                         2. Reject
+                       `;
+            return response;
+        }
+
+        //Flow for rejecting the accepting
+        if(level === 4 && textArray[1] === '2'  && textArray[3] === '1'){
+            const selectedIndex = parseInt(textArray[2]) - 1;
+            const pending = await order.find({ Status: 'Pending' });
+            const selectedRequest = pending[selectedIndex]; // Assuming pendingRequests is already populated
+           
+            
+            // Check if selectedRequest exists and its PaymentStatus is 'Pending'
+            if (selectedRequest && selectedRequest.Status === 'Pending') {
+              
+
+                // Update the order status to 'Approved' in the database
+                try {
+                    const updatedOrder = await order.findOneAndUpdate(
+                        { Order_id:  selectedRequest.Order_id },
+                        { $set: { Status: 'Processing' } },
+                        { new: true }
+                    );
+        
+                    if (updatedOrder) {
+                        // order status updated successfully
+                        // You can optionally perform additional actions here
+                        response = 'END Order approved successfully!';
+                        return response;
+                    } else {
+                        // order not found or update failed
+                        response = 'END Failed to update order status. Please try again later.';
+                        return response;
+                    }
+                } catch (error) {
+                    console.error('Error updating order status:', error);
+                    response = 'END An error occurred while updating order status. Please try again later.';
+                    return response;
+                }
+            } else {
+                // Invalid order selection or order is not in 'Pending' status
+                response = 'END Invalid order selection or order is not in pending status.';
+               
+            }
+        
+            return response;
+        }
+
+        //Flow for rejecting the order
+        if(level === 4 && textArray[1] === '2'  && textArray[3] === '2'){
+            const selectedIndex = parseInt(textArray[2]) - 1;
+            const pending = await order.find({ Status: 'Pending' });
+            const selectedRequest = pending[selectedIndex]; // Assuming pendingRequests is already populated
+           
+            
+
+            // Check if selectedRequest exists and its PaymentStatus is 'Pending'
+            if (selectedRequest && selectedRequest.Status === 'Pending') {
+               
+
+                // Update the order status to 'Approved' in the database
+                try {
+                    const updatedOrder = await order.findOneAndUpdate(
+                        { Order_id:  selectedRequest.Order_id },
+                        { $set: { Status: 'Rejected' } },
+                        { new: true }
+                    );
+        
+                    if (updatedOrder) {
+                        // order status updated successfully
+                        // You can optionally perform additional actions here
+                        response = 'END Order has been rejected!';
+                        return response;
+                    } else {
+                        // order not found or update failed
+                        response = 'END Failed to update order status. Please try again later.';
+                        return response;
+                    }
+                } catch (error) {
+                    console.error('Error updating order status:', error);
+                    response = 'END An error occurred while updating order status. Please try again later.';
+                    return response;
+                }
+            } else {
+                // Invalid order selection or order is not in 'Pending' status
+                response = 'END Invalid order selection or order is not in pending status.';
+               
+            }
+        
+            return response;
+        }
+
+
+        //Flow for updating orders in process to completed
+         if(level === 2 && textArray[1] === '3'){
+            try {
+                // Logic to retrieve orders processing from the database
+                const pendingOrders = await getOrdersProcessing();
+        
+                if (pendingOrders.length > 0) {
+                    // If there are orders processing, display them for review
+                    response = `CON <b> Orders in process:</b>\n`;
+                    pendingOrders.forEach((orders, index) => {
+                        response += `${index + 1}. <b>${orders.FoodName}</b>(<b>K${orders.Price}</b>)
+                                                   `;
+                    });
+                    response += `0. Back\n`;
+                    selectedOrder = pendingOrders;
+                    return response;
+                } else {
+                    // If there are no orders processing, display a message
+                    response = `END No orders in process for review.\n`;
+                    return response
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                response = 'END An error occurred while retrieving orders processing. Please try again later.';
+            }
+        }
+
+        //Get the details of the selected order in processing
+        if(level === 3 && textArray[1] === '3'){
+            const selectedIndex = parseInt(textArray[2]) - 1;
+            const selectedPendingOrder = selectedOrder[selectedIndex];
+
+            response = `CON <b>Confirm order as completed</b>
+                         Name: <b>${selectedPendingOrder.FoodName}</b>
+                         Price: <b>${selectedPendingOrder.Price}</b>
+
+                         1. Confirm finished
+                         99. Go Home
+                       `;
+            return response;
+        }
+
+        //Flow completing the order
+        if(level === 4 && textArray[1] === '3' && textArray[3] === '1'){
+            const selectedIndex = parseInt(textArray[2]) - 1;
+            const pending = await order.find({ Status: 'Processing' });
+            const selectedRequest = pending[selectedIndex]; // Assuming pendingRequests is already populated
+           
+            
+            // Check if selectedRequest exists and  is 'Processing'
+            if (selectedRequest && selectedRequest.Status === 'Processing') {
+              
+
+                // Update the order status to 'Ready' in the database
+                try {
+                    const updatedOrder = await order.findOneAndUpdate(
+                        { Order_id:  selectedRequest.Order_id },
+                        { $set: { Status: 'Ready' } },
+                        { new: true }
+                    );
+        
+                    if (updatedOrder) {
+                        // order status updated successfully
+                        // You can optionally perform additional actions here
+                        response = 'END Order is ready for pick up!';
+                        return response;
+                    } else {
+                        // order not found or update failed
+                        response = 'END Failed to update order status. Please try again later.';
+                        return response;
+                    }
+                } catch (error) {
+                    console.error('Error updating order status:', error);
+                    response = 'END An error occurred while updating order status. Please try again later.';
+                    return response;
+                }
+            } else {
+                // Invalid order selection or order is not in 'Pending' status
+                response = 'END Invalid order selection or order is not in processing status.';
+               
+            }
+        
+            return response;
+        }
+
+
+
+
       }
 }
 
+
+//Get pending orders
+const getPendingOrders = async () => {
+    try {
+        // Perform a database query to find all applications with status 'pending'
+        const pendingOrders = await order.find({ Status: 'Pending' });
+        return pendingOrders;
+    } catch (error) {
+        console.error('Error retrieving pending applications:', error);
+        throw new Error('Error retrieving pending applications. Please try again later.');
+    }
+};
+
+//Get Read Orders
+const getOrdersProcessing = async () => {
+    try {
+        // Perform a database query to find all applications with status 'pending'
+        const readyOrders = await order.find({ Status: 'Processing' });
+        return readyOrders;
+    } catch (error) {
+        console.error('Error retrieving pending applications:', error);
+        throw new Error('Error retrieving pending applications. Please try again later.');
+    }
+};
 module.exports = Admins;

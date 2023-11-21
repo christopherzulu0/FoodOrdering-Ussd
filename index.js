@@ -1,4 +1,4 @@
-const {Transaction, Wallet, User,Savings} = require('./models/Schemas');
+const {Transaction, Wallet, User,Savings, cart, order} = require('./models/Schemas');
 const express = require("express");
 const i18n = require("i18n");
 
@@ -59,20 +59,50 @@ router.post("/", (req, res) => {
       let userName;
       let userRegistered;
       let response = "";
+      let cartlength = "";
+      let total = "";
+      let user_orders = "";
+      let total_orders = "";
+      let total_processing = "";
+      let pending_orders = "";
+      let Admins = ""
 
       if (!user) {
         userRegistered = false;
       } else {
         userRegistered = true;
         userName = user.Name;
+        
       }
 
+      cartlength = await cart.find({Number: phoneNumber});
+      total = cartlength.length;
+
+
+      user_orders = await order.find({Number:phoneNumber});
+      total_orders = user_orders.length;
       
+
+      total_processing = await order.find({Status:'Processing'});
+      const all_processing = total_processing.length;
+
+      pending_orders = await order.find({Status:"Pending"});
+      const all_pending = pending_orders.length;
+
+ 
+      Admins = await User.findOne({ phoneNumber: phoneNumber });
+      checkRole = Admins ? Admins.Role : null;
       
+      // Check if the user has the 'Admin' role
+      let isAdmin = checkRole === 'Admin';
+       
+        
+
+
 
       // MAIN LOGIC
       if (text == "" && userRegistered == true) {
-        response = MainMenu(userName);
+        response = MainMenu(userName,total,total_orders,isAdmin);
       } else if (text == "" && userRegistered == false) {
         response = unregisteredMenu();
       } else if (text != "" && userRegistered == false) {
@@ -101,7 +131,7 @@ router.post("/", (req, res) => {
             response = await AllOrders(textArray,phoneNumber);
               break;
           case "5":
-            response = await Admin(textArray, phoneNumber);
+            response = await Admin(textArray, phoneNumber,all_processing,all_pending);
               break;
           default:
               response = "END Invalid choice. Please try again";

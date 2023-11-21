@@ -6,17 +6,25 @@ const { response } = require('express');
 const i18n = require("i18n");
 
 const menu = {
-  MainMenu: (userName) => {
+  MainMenu: (userName,total,total_orders,isAdmin) => {
     let response = "";
-     response = `CON Hi <b>${userName}</b>! 
-                         Choose an option to proceed
-                    1. Menu
-                    2. Cart(2)
-                    3. Order Status
-                    4. Your orders(2)
-            `;
+    if(isAdmin){
+      response = `CON Choose Option 
+                  5. Proceed to Admin
+                  99. Cancel
+      `;
+      return response;
+    }else {
+      response = `CON Hi <b>${userName}</b>! 
+            Choose an option to proceed
+      1. Menu
+      2. Cart<b>(${total})</b>
+      3. Order Status
+      4. Your orders<b>(${total_orders})</b>
+      `;
 
-    return response;
+return response;
+    }
   },
   unregisteredMenu: () => {
     let response = "";
