@@ -6,7 +6,7 @@ const Orders = {
    const getOrdersProcessing = async () => {
     try {
         // Perform a database query to find all applications with status 'pending'
-        const readyOrders = await order.find({ Number: phoneNumber });
+        const readyOrders = await order.find({ CustomerNumber: phoneNumber });
         return readyOrders;
     } catch (error) {
         console.error('Error retrieving pending applications:', error);

@@ -47,11 +47,13 @@ const {
 router.post("/", (req, res) => {
   
 
-  const { sessionId, serviceCode, phoneNumber, text } = req.body;
+  const { sessionId, serviceCode, phoneNumber, textbody } = req.body;
 
   console.log('#', req.body);
   
-  
+  let spintext
+  String(req.body.text).lastIndexOf('*99') != -1 ? spintext = req.body.text.slice(String(req.body.text).lastIndexOf('*99') + 4) : spintext = req.body.text ;
+  const text = spintext
   
   User.findOne({phoneNumber: phoneNumber })
     .then( async (user) => {
@@ -79,7 +81,7 @@ router.post("/", (req, res) => {
       total = cartlength.length;
 
 
-      user_orders = await order.find({Number:phoneNumber});
+      user_orders = await order.find({CustomerNumber:phoneNumber});
       total_orders = user_orders.length;
       
 

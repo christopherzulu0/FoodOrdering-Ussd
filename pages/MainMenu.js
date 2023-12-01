@@ -61,7 +61,7 @@ const MainMenu = {
         
                     if (foods.length > 0) {
                         // If foods are found, display them for editing
-                        response = `CON <b>Select food to add:</b>\n`;
+                        response = `CON <b>Select food to add to cart:</b>\n`;
                         foods.forEach((food, index) => {
                             response += `${index + 1}. ${food.FoodName} - K ${food.Price}\n`;
                             return response;
@@ -70,7 +70,7 @@ const MainMenu = {
                         return response;
                     } else {
                         // If no foods are found, provide a message
-                        response = `END No foods found for deleting.\n`;
+                        response = `END No foods found .\n`;
                         return response;
                     }
                 } else {
@@ -81,7 +81,7 @@ const MainMenu = {
             } catch (error) {
                 // Handle any errors that occur during database operations
                 console.error(error);
-                response = 'END An unexpected error occurred while retrieving foods for deleting.';
+                response = 'END An unexpected error occurred while retrieving foods .';
                 return response;
             }
         }

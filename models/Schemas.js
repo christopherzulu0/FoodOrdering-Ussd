@@ -75,6 +75,14 @@ const OrderSchema = mongoose.Schema({
         type: String,
         required: true
       },
+    TotalAmountPaid:{
+      type: Number,
+      default: 0
+    },
+    CustomerNumber:{
+     type:Number,
+     required:true
+    },
       Status: {
         type: String,
         enum: ['Pending','Processing','Ready','Rejected'],

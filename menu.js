@@ -9,9 +9,9 @@ const menu = {
   MainMenu: (userName,total,total_orders,isAdmin) => {
     let response = "";
     if(isAdmin){
-      response = `CON Choose Option 
-                  5. Proceed to Admin
-                  99. Cancel
+      response = `CON Welcome ${userName}! Enter 5 to continue
+                 
+                  99. Main Menu
       `;
       return response;
     }else {

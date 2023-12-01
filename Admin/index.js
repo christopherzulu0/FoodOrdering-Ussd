@@ -305,14 +305,27 @@ const Admins = {
             const selectedIndex = parseInt(textArray[2]) - 1;
             const selectedPendingOrder = selectedOrder[selectedIndex];
 
-            response = `CON <b>Approve or Decline Order</b>
-                         Name: <b>${selectedPendingOrder.FoodName}</b>
-                         Price: <b>${selectedPendingOrder.Price}</b>
+            console.log("AmountPaid:",selectedPendingOrder.TotalAmountPaid)
+             if(selectedPendingOrder.TotalAmountPaid === 0){
+                response = `CON <b>Approve or Decline Order</b>
+                Name: <b>${selectedPendingOrder.FoodName}</b>
+                Price: <b>${selectedPendingOrder.Price}</b>
 
-                         1. Accept
-                         2. Reject
-                       `;
-            return response;
+                The customer paid <b>K${selectedPendingOrder.TotalAmountPaid}<b>,for the order!
+              `;
+   return response;
+             }else{
+                response = `CON <b>Approve or Decline Order</b>
+                Name: <b>${selectedPendingOrder.FoodName}</b>
+                Price: <b>${selectedPendingOrder.Price}</b>
+ 
+                The customer paid <b>K${selectedPendingOrder.TotalAmountPaid}</b>,for the order!
+                1. Accept
+                2. Reject
+              `;
+   return response;
+             }
+           
         }
 
         //Flow for rejecting the accepting
