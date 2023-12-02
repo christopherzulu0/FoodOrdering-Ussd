@@ -244,72 +244,22 @@ const ViewCart = {
                  `;
                  return response;
     }
+    //Confirm pin
+    else if (level === 4 && textArray[1] === '3' && textArray[3] === '1') {
+      response = `CON Provide Password to make an order`;
+      return response;
+    }
 
     //Logic for making money using MTN Zm
-    else if (level === 4 && textArray[1] === '3' && textArray[3] === '1') {
-      // Handle order confirmation and completion
+    else if (level === 5 && textArray[1] === '3' && textArray[3] === '1') {
+      const getPassword = await User.findOne({phoneNumber:phoneNumber});
+      const isPassword = getPassword.pin;
+      
+      if(isPassword === textArray[4]){
+           // Handle order confirmation and completion
       try {
-          // Call mtnPayouts function and check its status
-          const payoutStatus = await mtnPayouts( totalCost);
-  
-          // Check if the payout was successful (customize the condition based on your response)
-          if (payoutStatus.status === 'ACCEPTED') {
-              // Assuming `items` contains the cart items retrieved from the database
-              const items = await cart.find({ Number: phoneNumber });
-  
-             console.log('Amount Paid:',totalCost)
-  
-              if (items && items.length > 0) {
-                  // Create an array to store order documents
-                  const orderDocuments = [];
-  
-                  // Iterate through cart items and create order documents
-                  items.forEach(item => {
-                      const orderDocument = new order({
-                          FoodName: item.FoodName,
-                          Price: item.Price,
-                          Order_id: item.Order_id,
-                          CustomerNumber: phoneNumber,
-                          TotalAmountPaid: totalCost
-                          // Add other fields as needed
-                      });
-  
-                      orderDocuments.push(orderDocument);
-                  });
-  
-                  // Save order documents to the database
-                  const savedOrders = await order.insertMany(orderDocuments);
-  
-                  // Delete cart items after placing the order
-                  const deletedItems = await cart.deleteMany({ Number: phoneNumber });
-  
-                  // Implement other logic if needed (e.g., update inventory)
-  
-                  response = `END You have successfully placed an order.`;
-                  return response;
-              } else {
-                  response = "END No items in the cart.";
-                  return response;
-              }
-          } else {
-              // If the payout was not successful, handle accordingly
-              response = 'END Payout to recipient failed. Please try again.';
-              return response;
-          }
-      } catch (error) {
-          // Log the detailed error information
-          console.error('Error processing order:', error);
-          response = 'END An unexpected error occurred while processing the order.';
-          return response;
-      }
-  }
-
-  //Logic for making money using Airtel Zm
-  else if (level === 4 && textArray[1] === '3' && textArray[3] === '2') {
-    // Handle order confirmation and completion
-    try {
         // Call mtnPayouts function and check its status
-        const payoutStatus = await airtelPayouts( totalCost);
+        const payoutStatus = await mtnPayouts( totalCost);
 
         // Check if the payout was successful (customize the condition based on your response)
         if (payoutStatus.status === 'ACCEPTED') {
@@ -361,6 +311,89 @@ const ViewCart = {
         response = 'END An unexpected error occurred while processing the order.';
         return response;
     }
+      }else{
+        response =`CON Your password is not correct.
+                   99. Go home
+                   `;
+                   return response;
+      }
+      
+  }
+
+
+  //Confirm pin
+  else if (level === 4 && textArray[1] === '3' && textArray[3] === '2') {
+    response = `CON Provide Password to make an order`;
+    return response;
+  }
+  //Logic for making money using Airtel Zm
+  else if (level === 5 && textArray[1] === '3' && textArray[3] === '2') {
+    const getPassword = await User.findOne({phoneNumber:phoneNumber});
+    const isPassword = getPassword.pin;
+    
+    if(isPassword === textArray[4]){
+       // Handle order confirmation and completion
+    try {
+      // Call mtnPayouts function and check its status
+      const payoutStatus = await airtelPayouts( totalCost);
+
+      // Check if the payout was successful (customize the condition based on your response)
+      if (payoutStatus.status === 'ACCEPTED') {
+          // Assuming `items` contains the cart items retrieved from the database
+          const items = await cart.find({ Number: phoneNumber });
+
+         console.log('Amount Paid:',totalCost)
+
+          if (items && items.length > 0) {
+              // Create an array to store order documents
+              const orderDocuments = [];
+
+              // Iterate through cart items and create order documents
+              items.forEach(item => {
+                  const orderDocument = new order({
+                      FoodName: item.FoodName,
+                      Price: item.Price,
+                      Order_id: item.Order_id,
+                      CustomerNumber: phoneNumber,
+                      TotalAmountPaid: totalCost
+                      // Add other fields as needed
+                  });
+
+                  orderDocuments.push(orderDocument);
+              });
+
+              // Save order documents to the database
+              const savedOrders = await order.insertMany(orderDocuments);
+
+              // Delete cart items after placing the order
+              const deletedItems = await cart.deleteMany({ Number: phoneNumber });
+
+              // Implement other logic if needed (e.g., update inventory)
+
+              response = `END You have successfully placed an order.`;
+              return response;
+          } else {
+              response = "END No items in the cart.";
+              return response;
+          }
+      } else {
+          // If the payout was not successful, handle accordingly
+          response = 'END Payout to recipient failed. Please try again.';
+          return response;
+      }
+  } catch (error) {
+      // Log the detailed error information
+      console.error('Error processing order:', error);
+      response = 'END An unexpected error occurred while processing the order.';
+      return response;
+  }
+    }else{
+        response =`CON Your password is not correct.
+                   99. Go home
+                   `;
+                   return response;
+      }
+   
 }
   
   
